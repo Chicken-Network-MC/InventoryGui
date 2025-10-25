@@ -48,6 +48,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -1349,7 +1350,7 @@ public class InventoryGui implements Listener {
                 if (click != null && (originalCursor == null || !originalCursor.equals(click.getCursor()))) {
                     event.setCursor(click.getCursor());
                 }
-            } else if (hasRealOwner() && owner.equals(event.getInventory().getHolder())) {
+            } else if (hasRealOwner() && owner.equals(event.getInventory().getHolder(true))) {
                 // Click into inventory by same owner but not the inventory of the GUI
                 // Assume that the underlying inventory changed and redraw the GUI
                 runTask(() -> InventoryGui.this.draw(false));
@@ -1472,7 +1473,7 @@ public class InventoryGui implements Listener {
 
         @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
         public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-            if (hasRealOwner() && (owner.equals(event.getDestination().getHolder()) || owner.equals(event.getSource().getHolder()))) {
+            if (hasRealOwner() && (owner.equals(event.getDestination().getHolder(true)) || owner.equals(event.getSource().getHolder(true)))) {
                 runTask(() -> InventoryGui.this.draw(false));
             }
         }
@@ -1511,7 +1512,7 @@ public class InventoryGui implements Listener {
         protected class ItemSwapGuiListener extends OptionalListener {
 
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onInventoryMoveItem(PlayerSwapHandItemsEvent event) {
+            public void onInventorySwapItem(PlayerSwapHandItemsEvent event) {
                 Inventory inventory = getInventory(event.getPlayer());
                 try {
                     if (GuiView.of(event.getPlayer().getOpenInventory()).getTopInventory().equals(inventory)) {
