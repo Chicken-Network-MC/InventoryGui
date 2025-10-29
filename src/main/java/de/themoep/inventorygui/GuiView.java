@@ -9,8 +9,9 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Internal
 public class GuiView {
@@ -31,10 +32,24 @@ public class GuiView {
     private static final MethodHandle SET_PROPERTY = unreflect("setProperty");
     private static final MethodHandle GET_TITLE = unreflect("getTitle");
 
-    private static final WeakHashMap<InventoryView, GuiView> VIEWS = new WeakHashMap<>();
+    private static final ConcurrentHashMap<Integer, WeakReference<GuiView>> VIEWS = new ConcurrentHashMap<>();
 
     public static GuiView of(InventoryView view) {
-        return VIEWS.computeIfAbsent(view, k -> new GuiView(view));
+        int hash = System.identityHashCode(view);
+
+        if (VIEWS.size() % 100 == 0) {
+            VIEWS.entrySet().removeIf(entry -> entry.getValue().get() == null);
+        }
+
+        WeakReference<GuiView> ref = VIEWS.get(hash);
+        GuiView guiView = ref != null ? ref.get() : null;
+
+        if (guiView == null || guiView.view != view) {
+            guiView = new GuiView(view);
+            VIEWS.put(hash, new WeakReference<>(guiView));
+        }
+
+        return guiView;
     }
 
     private final InventoryView view;
