@@ -48,10 +48,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.Plugin;
@@ -600,7 +597,9 @@ public class InventoryGui implements Listener {
         // Draw the elements into an inventory, if the title was updated then also force-recreate the inventory if it exists
         draw(player, true, titleUpdated);
         if (titleUpdated || !checkOpen || !this.equals(getOpen(player))) {
-            InventoryType type = GuiView.of(player.getOpenInventory()).getType();
+            InventoryView openInventory = player.getOpenInventory();
+            GuiView guiView = GuiView.of(openInventory);
+            InventoryType type = guiView.getType();
             if (type != InventoryType.CRAFTING && type != InventoryType.CREATIVE) {
                 // If the player already has a gui open then we assume that the call was from that gui.
                 // In order to not close it in a InventoryClickEvent listener (which will lead to errors)
